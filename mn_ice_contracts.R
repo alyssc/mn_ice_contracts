@@ -69,21 +69,56 @@ all_after_2020 %>%
   print(n=20)
 
 # Q: How does Minnesota compare to other states in receiving contracts for ammunition? 
+# (see https://www.acquisition.gov/psc-manual)
 # A: Minnesota receives by far the most in contracts for ammunition. 
-# $28,983,996 since 2020, and $6,655,672 since 2024. 
-all_after_2020 %>% 
-  filter(award_base_action_date > ymd("2024-01-01") & grepl("AMMUNITION", product_or_service_code_description, fixed=TRUE)) %>%
+# $28,545,798 since 2020, and $6,636,805 since 2024. 
+ammunition_codes <- c("1305","1310","1315","1320")
+ammunition_by_state <- all_after_2020 %>% 
+  filter(award_base_action_date > ymd("2020-01-01") & product_or_service_code %in% ammunition_codes) %>%
   group_by(recipient_state_name) %>%
   summarize(obligations = sum(total_obligated_amount)) %>%
   arrange(desc(obligations)) 
 
+write.csv(ammunition_by_state, "ammunition_by_state.csv")
+
 # Q: Same as above, but for Vista Outdoors
 # A: $6,636,805 in the past year
 all_after_2020 %>% 
-  filter(award_base_action_date > ymd("2024-01-01") & grepl("AMMUNITION", product_or_service_code_description, fixed=TRUE)) %>%
+  filter(award_base_action_date > ymd("2024-01-01") & product_or_service_code %in% ammunition_codes) %>%
   group_by(recipient_name) %>%
   summarize(obligations = sum(total_obligated_amount)) %>%
   arrange(desc(obligations)) 
+
+# Vista Outdoor/MN has $5 million in active contracts
+all_after_2020 %>% 
+  filter(period_of_performance_current_end_date > ymd("2025-03-28") & product_or_service_code %in% ammunition_codes) %>%
+  group_by(recipient_state_name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
+
+
+# Q: How does Minnesota compare to other states in receiving contracts for gun range rentals? 
+all_after_2020 %>% 
+  filter(award_base_action_date > ymd("2020-01-01") & product_or_service_code =="X1EA") %>%
+  group_by(recipient_state_name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
+
+all_after_2020 %>% 
+  filter(award_base_action_date > ymd("2020-01-01") & product_or_service_code =="X1EA") %>%
+  group_by(recipient_name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
+
+# active gun range contracts
+active_gun_range_contracts <- all_after_2020 %>% 
+  filter(period_of_performance_current_end_date > ymd("2025-01-01") & product_or_service_code =="X1EA") %>%
+  group_by(recipient_name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
+
+write.csv(active_gun_range_contracts, "active_gun_range_contracts.csv")
+
 
 
 
