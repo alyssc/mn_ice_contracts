@@ -3,15 +3,13 @@ library(tidyverse)
 library(lubridate)
 library(plotly)
 
-setwd("/Users/alyssachen/Desktop/Projects/minnesota")
-
-# All contracts with ICE with recipient location in MN
+# All contracts with ICE with recipient location in MN (all time)
 minnesota <- read.csv("mn_all/Contracts_PrimeAwardSummaries_2025-03-21_H19M57S23_1.csv")
 
 # All contracts with ICE after 2020-01-01
 all_after_2020 <- read.csv("all_after_2020/Contracts_PrimeAwardSummaries_2025-03-28_H03M21S32_1.csv")
 
-# University of Minnesota contracts with ICE
+# University of Minnesota contracts with ICE (all time)
 umn <- read.csv("umn/Contracts_PrimeAwardSummaries_2025-03-28_H02M59S08_1.csv")
 
 
@@ -111,31 +109,44 @@ all_after_2020 %>%
   arrange(desc(obligations)) 
 
 # active gun range contracts
-active_gun_range_contracts <- all_after_2020 %>% 
+all_after_2020 %>% 
   filter(period_of_performance_current_end_date > ymd("2025-01-01") & product_or_service_code =="X1EA") %>%
   group_by(recipient_name) %>%
   summarize(obligations = sum(total_obligated_amount)) %>%
   arrange(desc(obligations)) 
 
+# broaden gun range contract search criteria
+patterns <-c("training facility", "range rental","gun range","shooting facility","firearm range","firearms range","firing range")
+active_gun_range_contracts <- all_after_2020 %>% 
+  filter(period_of_performance_current_end_date > ymd("2025-03-30") & 
+           (product_or_service_code =="X1EA" |  grepl(paste(patterns, collapse="|"),prime_award_base_transaction_description,ignore.case=TRUE) )) %>%
+  slice(-c(24,26))  # remove unrelated rows 
+
 write.csv(active_gun_range_contracts, "active_gun_range_contracts.csv")
 
+# by recipient and state
+active_gun_range_contracts_by_recipient <- active_gun_range_contracts %>%
+  mutate(name = paste(recipient_name, " (",recipient_state_code,")", sep="") ) %>%
+  group_by(name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
+
+# for reader to search
+active_gun_range_contracts_explore <- active_gun_range_contracts %>%
+  # mutate(name = paste(recipient_name, " (",recipient_state_code,")", sep="") ) %>%
+  select(recipient_name, recipient_state_code, total_obligated_amount, total_outlayed_amount, period_of_performance_start_date, period_of_performance_current_end_date) %>%
+  arrange(desc(total_obligated_amount))
+
+write.csv(active_gun_range_contracts_explore, "active_gun_range_contracts_explore.csv")
 
 
+# by recipient state
+active_gun_range_contracts_by_state <- active_gun_range_contracts %>%
+  mutate(recipient_state_name = str_to_title(recipient_state_name)) %>%
+  group_by(recipient_state_name) %>%
+  summarize(obligations = sum(total_obligated_amount)) %>%
+  arrange(desc(obligations)) 
 
+write.csv(active_gun_range_contracts_by_state, "active_gun_range_contracts_by_state.csv")
 
-dim(data)
-colnames(data)
-
-# cut down columns to potentially relevant ones
-contracts <- data[,c(11:82,91,96:103,286)]
-dim(contracts)
-colnames(contracts)
-
-# cut down for display
-pared <- contracts[,c(36,75,1,3,5,7,9,10,66,81,73)]
-head(pared)
-
-pared$award_base_action_date <- ymd(pared$award_base_action_date)
-
-write.csv(pared, "mn_contracts_selectedcols.csv")
 
