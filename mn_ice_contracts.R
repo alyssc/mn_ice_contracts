@@ -4,13 +4,13 @@ library(lubridate)
 library(plotly)
 
 # All contracts with ICE with recipient location in MN (all time)
-minnesota <- read.csv("mn_all/Contracts_PrimeAwardSummaries_2025-03-21_H19M57S23_1.csv")
+minnesota <- read.csv("data/mn_all/Contracts_PrimeAwardSummaries_2025-03-21_H19M57S23_1.csv")
 
 # All contracts with ICE after 2020-01-01
-all_after_2020 <- read.csv("all_after_2020/Contracts_PrimeAwardSummaries_2025-03-28_H03M21S32_1.csv")
+all_after_2020 <- read.csv("data/all_after_2020/Contracts_PrimeAwardSummaries_2025-03-28_H03M21S32_1.csv")
 
 # University of Minnesota contracts with ICE (all time)
-umn <- read.csv("umn/Contracts_PrimeAwardSummaries_2025-03-28_H02M59S08_1.csv")
+umn <- read.csv("data/umn/Contracts_PrimeAwardSummaries_2025-03-28_H02M59S08_1.csv")
 
 
 # convert relevant dates using lubridate package
@@ -77,7 +77,7 @@ ammunition_by_state <- all_after_2020 %>%
   summarize(obligations = sum(total_obligated_amount)) %>%
   arrange(desc(obligations)) 
 
-write.csv(ammunition_by_state, "ammunition_by_state.csv")
+write.csv(ammunition_by_state, "to_visualize/ammunition_by_state.csv")
 
 # Q: Same as above, but for Vista Outdoors
 # A: $6,636,805 in the past year
@@ -122,7 +122,7 @@ active_gun_range_contracts <- all_after_2020 %>%
            (product_or_service_code =="X1EA" |  grepl(paste(patterns, collapse="|"),prime_award_base_transaction_description,ignore.case=TRUE) )) %>%
   slice(-c(24,26))  # remove unrelated rows 
 
-write.csv(active_gun_range_contracts, "active_gun_range_contracts.csv")
+write.csv(active_gun_range_contracts, "to_visualize/active_gun_range_contracts.csv")
 
 # by recipient and state
 active_gun_range_contracts_by_recipient <- active_gun_range_contracts %>%
@@ -137,7 +137,7 @@ active_gun_range_contracts_explore <- active_gun_range_contracts %>%
   select(recipient_name, recipient_state_code, total_obligated_amount, total_outlayed_amount, period_of_performance_start_date, period_of_performance_current_end_date) %>%
   arrange(desc(total_obligated_amount))
 
-write.csv(active_gun_range_contracts_explore, "active_gun_range_contracts_explore.csv")
+write.csv(active_gun_range_contracts_explore, "to_visualize/active_gun_range_contracts_explore.csv")
 
 
 # by recipient state
@@ -147,6 +147,6 @@ active_gun_range_contracts_by_state <- active_gun_range_contracts %>%
   summarize(obligations = sum(total_obligated_amount)) %>%
   arrange(desc(obligations)) 
 
-write.csv(active_gun_range_contracts_by_state, "active_gun_range_contracts_by_state.csv")
+write.csv(active_gun_range_contracts_by_state, "to_visualize/active_gun_range_contracts_by_state.csv")
 
 
