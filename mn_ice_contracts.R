@@ -28,8 +28,13 @@ all_after_2020 <- process_data(all_after_2020)
 
 # Q: Check to see educational institutions receiving ICE contracts. 
 # A: UMN is the only university to receive contracts since 2023. 
+# Note: I'm not counting Graceland College Center, which is a professional
+# development and continuing education center. 
+# Eg. see Graceland tax return: https://projects.propublica.org/nonprofits/organizations/431685651/202001069349301410/full
+patterns <- c("college","university")
 all_after_2020 %>%
-  filter(educational_institution=="t"  & period_of_performance_current_end_date>ymd("2022-01-01") ) %>%
+  filter(period_of_performance_current_end_date>ymd("2022-01-01") ) %>%
+  filter(educational_institution=="t"  | grepl(paste(patterns, collapse="|"),recipient_name,ignore.case=TRUE) ) %>%
   select(recipient_name, period_of_performance_current_end_date) %>%
   arrange(period_of_performance_current_end_date)
 
